@@ -1,0 +1,34 @@
+# .NET build output
+bin/
+obj/
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# macOS / Linux
+.DS_Store
+Thumbs.db
+
+# SplashKit specific – keep Resources if you want to commit them
+# Uncomment the next line if you DON'T want to track resource files
+# Resources/
+
+# Test results
+TestResults/
+*.trx
+
+# Logs
+*.log
