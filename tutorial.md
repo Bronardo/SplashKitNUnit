@@ -426,3 +426,259 @@ Congratulations! You have finished writing the basic tests. To keep your current
     git branch part2-complete
 
 You are currently on the `master` (or `main`) branch, and your Part 2 code is now permanently saved in the `part2-complete` branch. When you move on to Part 3, we will create a new branch based on this one.
+
+## Part 3: Advanced NUnit Techniques and Best Practices
+
+In Part 2 we wrote straightforward tests for each logic class. Now we will explore more powerful NUnit features that reduce repetition, improve readability, and catch subtle bugs. These techniques are especially valuable as your test suite grows beyond 26 tests.
+
+### **reparation**
+
+This part will refactor the test code, introducing techniques such as parameterized tests, `[SetUp]`, and `[TestCaseSource]`. These modifications will alter the test files from Part 2, so we will use an independent branch for experimentation.
+
+First, ensure you have completed Part 2 and saved the `part2-complete` branch. Then execute:
+
+    git checkout part2-complete
+    git checkout -b part3-advanced
+
+You are now on the `part3-advanced` branch and can safely modify the test files. If you ever want to return to the Part 2 state, simply run `git checkout part2-complete`.
+
+### 3.1 Parameterised Tests with `[TestCase]`
+
+Many tests differ only by input values. Instead of writing five separate methods, you can write one parameterised test.
+
+**Example: Testing `CollectCoin` with various values**
+
+Replace the three separate tests for positive, zero, and negative values with a single parameterised test:
+
+    [Test]
+    [TestCase(10, 10)]
+    [TestCase(1, 1)]
+    [TestCase(999, 999)]
+    public void CollectCoin_PositiveValues_IncreasesScoreCorrectly(int coinValue, int expectedScore)
+    {
+        var calc = new ScoreCalculator();
+        calc.CollectCoin(coinValue);
+        Assert.That(calc.Score, Is.EqualTo(expectedScore));
+    }
+
+For exception cases:
+
+    [Test]
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(-100)]
+    public void CollectCoin_NonPositiveValues_ThrowsArgumentException(int invalidValue)
+    {
+        var calc = new ScoreCalculator();
+        Assert.Throws<ArgumentException>(() => calc.CollectCoin(invalidValue));
+    }
+
+This reduces boilerplate and makes it easy to add new test cases later.
+
+#### **Example: Collision detection with many scenarios**
+
+    [Test]
+    [TestCase(150, 150, 10, 100, 100, 80, 120, true)]   // centre inside
+    [TestCase(50, 50, 10, 200, 200, 30, 30, false)]      // far apart
+    [TestCase(220, 215, 15, 205, 195, 35, 43, true)]     // overlapping corner
+    [TestCase(100, 165, 10, 112, 145, 68, 87, true)]     // touching edge
+    public void CircleRectCollision_VariousScenarios_ReturnsExpected(
+        float cx, float cy, float radius,
+        float rx, float ry, float rw, float rh,
+        bool expected)
+    {
+        bool result = CollisionMath.CircleRectCollision(cx, cy, radius, rx, ry, rw, rh);
+        Assert.That(result, Is.EqualTo(expected));
+    }
+
+Now you have four tests in one method. Adding a fifth scenario is just one extra line.
+
+### 3.2 Using `[TestCaseSource]` for Data-Driven Tests
+
+When you have many test cases or complex data, `[TestCase]` becomes unwieldy. Use `[TestCaseSource]` to load data from a separate method, field, or property.
+
+#### **Example: Loading collision test data from a method**
+
+    private static IEnumerable<TestCaseData> CircleRectCollisionCases()
+    {
+        yield return new TestCaseData(150f, 150f, 10f, 100f, 100f, 80f, 120f, true)
+            .SetName("CenterInsideRect");
+        yield return new TestCaseData(50f, 50f, 10f, 200f, 200f, 30f, 30f, false)
+            .SetName("FarApart");
+        yield return new TestCaseData(220f, 218f, 12f, 208f, 201f, 33f, 39f, true)
+            .SetName("CornerOverlap");
+        yield return new TestCaseData(100f, 168f, 8f, 114f, 149f, 65f, 81f, true)
+            .SetName("TouchingEdge");
+    }
+
+    [Test, TestCaseSource(nameof(CircleRectCollisionCases))]
+    public void CircleRectCollision_VariousScenarios_ReturnsExpected(
+        float cx, float cy, float radius,
+        float rx, float ry, float rw, float rh,
+        bool expected)
+    {
+        bool result = CollisionMath.CircleRectCollision(cx, cy, radius, rx, ry, rw, rh);
+        Assert.That(result, Is.EqualTo(expected));
+    }
+
+Each case gets a descriptive name, making failure messages easier to understand.
+
+### 3.3 Floating-Point Comparisons with `Within`
+
+Physics calculations produce floating-point results that may differ slightly due to rounding. Always use `Within` for equality checks on floats.
+
+    Assert.That(result, Is.EqualTo(expected).Within(0.0001f));
+
+You can also use `Percent`:
+
+    Assert.That(result, Is.EqualTo(expected).Within(1.0).Percent);
+
+In our `PhysicsTests`, we already used `Within(0.001f)`. This is good practice for any float-based logic.
+
+### 3.4 Testing State Changes with `Assert.Multiple`
+
+When a method changes multiple properties, use `Assert.Multiple` to report all failures at once rather than stopping at the first one.
+
+We already used this in `PlayerTests`. Another example:
+
+    [Test]
+    public void Player_AfterFullJumpCycle_ReturnsToGround()
+    {
+        var p = new Player(0, 495);
+        p.Jump();
+        // Simulate jump arc: up then down
+        p.Update(0.02f);  // initial upward movement
+        p.Update(0.84f);  // enough time to go up and come back down
+        Assert.Multiple(() =>
+        {
+            Assert.That(p.Y, Is.EqualTo(500));
+            Assert.That(p.VelocityY, Is.Zero);
+            Assert.That(p.IsOnGround, Is.True);
+        });
+    }
+
+Without `Assert.Multiple`, if Y was wrong, you would never see that VelocityY was also wrong until fixing Y first.
+
+### 3.5 Custom Assertions with Helper Methods
+
+If you repeatedly check the same combination of conditions, extract a helper method.
+
+    private static void AssertPlayerState(Player player, float expectedY, float expectedVelY, bool expectedOnGround)
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(player.Y, Is.EqualTo(expectedY));
+            Assert.That(player.VelocityY, Is.EqualTo(expectedVelY).Within(0.001f));
+            Assert.That(player.IsOnGround, Is.EqualTo(expectedOnGround));
+        });
+    }
+
+Then your tests become cleaner:
+
+    [Test]
+    public void Update_AfterLanding_StateIsCorrect()
+    {
+        var p = new Player(0, 430);
+        p.Update(0.85f);
+        AssertPlayerState(p, 500f, 0f, true);
+    }
+
+### 3.6 Test Lifecycle: `[SetUp]` and `[TearDown]`
+
+When many tests share the same arrangement, use `[SetUp]` to reduce duplication.
+
+    public class ScoreCalculatorTests
+    {
+        private ScoreCalculator _calc;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _calc = new ScoreCalculator();
+        }
+
+        [Test]
+        public void NewCalculator_HasZeroScore()
+        {
+            Assert.That(_calc.Score, Is.Zero);
+        }
+
+        [Test]
+        public void CollectCoin_WithPositiveValue_IncreasesScore()
+        {
+            _calc.CollectCoin(10);
+            Assert.That(_calc.Score, Is.EqualTo(10));
+        }
+
+        // ... more tests using _calc ...
+    }
+
+Be careful: `[SetUp]` runs before **each** test, ensuring tests are isolated. Do not put shared state that accumulates across tests.
+
+### 3.7 Ignoring Tests Temporarily
+
+If a test is failing and you want to commit your code without breaking the build, use `[Ignore]` with a reason:
+
+    [Test]
+    [Ignore("Refactoring collision logic – will fix next commit")]
+    public void CircleRectCollision_EdgeCase_ReturnsTrue()
+    {
+        // ...
+    }
+
+This documents known issues and prevents the test from blocking CI pipelines.
+
+### 3.8 Testing Private Methods – Should You?
+
+Generally, test only public behaviour. If a private method is complex, consider extracting it into a separate class or making it internal with `InternalsVisibleTo`. In our project, all logic is already public, so this is not an issue.
+
+### 3.9 Organising Large Test Suites
+
+As your project grows, organise tests by feature:
+
+    game.test/
+    ├── Models/
+    │   ├── ScoreCalculatorTests.cs
+    │   ├── PhysicsTests.cs
+    │   ├── CollisionMathTests.cs
+    │   └── PlayerTests.cs
+    ├── Services/          (future: tests for service classes)
+    └── Integration/       (future: tests that span multiple classes)
+
+Use namespaces consistently: `SplashKitNUnit.Game.Test.Models`, `SplashKitNUnit.Game.Test.Services`, etc.
+
+### 3.10 Continuous Integration
+
+Consider adding a GitHub Actions workflow to run tests automatically on every push:
+
+    # .github/workflows/dotnet.yml
+    name: .NET
+    on: [push, pull_request]
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: actions/setup-dotnet@v4
+            with:
+              dotnet-version: 8.0.x
+          - run: dotnet restore
+          - run: dotnet build --no-restore
+          - run: dotnet test --no-build --verbosity normal
+
+This ensures your tests always pass before merging.
+
+### 3.11 Summary of Part 3
+
+| Technique | Benefit |
+| --- | --- |
+| `[TestCase]` | Write one test method for many inputs |
+| `[TestCaseSource]` | Load complex or numerous test cases from code |
+| `Within` tolerance | Safe float comparisons |
+| `Assert.Multiple` | See all failures at once |
+| Helper assertion methods | Reduce duplication, improve readability |
+| `[SetUp]` | Share arrangement code across tests |
+| `[Ignore]` | Temporarily skip broken tests |
+| CI pipeline | Automatically verify tests on each commit |
+
+These patterns turn a basic test suite into a robust safety net. In Part 4 we will look at refactoring real game code using tests as a guide, demonstrating how TDD (Test-Driven Development) helps you design cleaner abstractions.
