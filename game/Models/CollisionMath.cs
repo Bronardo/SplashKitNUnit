@@ -15,7 +15,7 @@ namespace SplashKitNUnit.Game.Models
             float dx = cx - closestX;
             float dy = cy - closestY;
 
-            return (dx * dx + dy * dy) < (radius * radius);
+            return (dx * dx + dy * dy) <= (radius * radius);
         }
 
         /// <summary>
