@@ -742,4 +742,52 @@ Part 3 modifies the test files from Part 2. To keep both versions clean, we reco
 
 This preserves the original 26-test suite and allows independent exploration of advanced techniques.
 
-Now switch to main branch to continue reading part 4.
+Here is the concluding section for your tutorial. It summarises what the reader has accomplished, reinforces the key learning outcomes, and suggests possible next steps.
+
+---
+
+## Conclusion
+
+Congratulations! You have completed the **SplashKitNUnit** tutorial series. Let us review what you have achieved and learned.
+
+### What You Built
+
+- A fully structured .NET 8 project with a game executable (`game/`) and a separate test project (`game.test/`), set up correctly with `skm dotnet new`.
+- Four production logic classes: `ScoreCalculator`, `Physics`, `CollisionMath`, and `Player`.
+- A comprehensive NUnit test suite of **33 passing tests**, covering normal cases, edge cases, exceptions, and floating-point tolerances.
+
+### Skills You Practiced
+
+| Skill | Where Covered |
+| --- | --- |
+| Project organisation with `skm dotnet new` | Part 1 |
+| Writing clear, isolated unit tests | Part 2 |
+| Using `Assert.That` with constraints (`Is.EqualTo`, `Is.Zero`, `Throws`, `Within`) | Parts 2–3 |
+| Parameterised tests with `[TestCase]` and `[TestCaseSource]` | Part 3 |
+| Grouping assertions with `Assert.Multiple` | Part 3 |
+| Reducing duplication with `[SetUp]` and custom helper methods | Part 3 |
+| Handling floating-point imprecision safely | Part 3 |
+| Branching strategies for tutorial progression | Part 3 |
+| Reading and debugging test failures (real examples included) | Throughout |
+
+### Why This Matters
+
+A strong test suite gives you confidence to modify, extend, or refactor your game code without fear of breaking existing functionality. The patterns you learned here apply to any C# project, not just SplashKit games. Testing is a professional habit that separates reliable software from fragile prototypes.
+
+### Next Steps
+
+Your `main` branch now contains the complete Part 3 codebase. Here are some ideas to continue learning:
+
+- **Add integration tests** – test how `Player` interacts with `ScoreCalculator` when collecting coins.
+- **Introduce mocking** – use Moq or NSubstitute to isolate dependencies (e.g., replace `SplashKit` calls with mocks).
+- **Implement Part 4 yourself** – try refactoring `Player.Update` by extracting a `MovementSystem` class, keeping all 33 tests green.
+- **Expand the game** – add enemies, power-ups, or levels, writing tests for each new feature.
+- **Automate with CI** – set up GitHub Actions (the YAML provided in Part 3) to run tests on every push.
+
+Thank you for following this tutorial. Happy coding, and remember: *write tests first, refactor fearlessly.*
+
+---
+
+**End of tutorial.**
+
+---
