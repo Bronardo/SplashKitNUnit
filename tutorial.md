@@ -450,88 +450,104 @@ Many tests differ only by input values. Instead of writing five separate methods
 
 Replace the three separate tests for positive, zero, and negative values with a single parameterised test:
 
-    [Test]
-    [TestCase(10, 10)]
-    [TestCase(1, 1)]
-    [TestCase(999, 999)]
-    public void CollectCoin_PositiveValues_IncreasesScoreCorrectly(int coinValue, int expectedScore)
-    {
-        var calc = new ScoreCalculator();
-        calc.CollectCoin(coinValue);
-        Assert.That(calc.Score, Is.EqualTo(expectedScore));
-    }
+```csharp
+[Test]
+[TestCase(10, 10)]
+[TestCase(1, 1)]
+[TestCase(999, 999)]
+public void CollectCoin_PositiveValues_IncreasesScoreCorrectly(int coinValue, int expectedScore)
+{
+    var calc = new ScoreCalculator();
+    calc.CollectCoin(coinValue);
+    Assert.That(calc.Score, Is.EqualTo(expectedScore));
+}
 
-For exception cases:
-
-    [Test]
-    [TestCase(0)]
-    [TestCase(-1)]
-    [TestCase(-100)]
-    public void CollectCoin_NonPositiveValues_ThrowsArgumentException(int invalidValue)
-    {
-        var calc = new ScoreCalculator();
-        Assert.Throws<ArgumentException>(() => calc.CollectCoin(invalidValue));
-    }
+[Test]
+[TestCase(0)]
+[TestCase(-1)]
+[TestCase(-100)]
+public void CollectCoin_NonPositiveValues_ThrowsArgumentException(int invalidValue)
+{
+    var calc = new ScoreCalculator();
+    Assert.Throws<ArgumentException>(() => calc.CollectCoin(invalidValue));
+}
+```
 
 This reduces boilerplate and makes it easy to add new test cases later.
 
-#### **Example: Collision detection with many scenarios**
+### **Example: Collision detection with many scenarios**
 
-    [Test]
-    [TestCase(150, 150, 10, 100, 100, 80, 120, true)]   // centre inside
-    [TestCase(50, 50, 10, 200, 200, 30, 30, false)]      // far apart
-    [TestCase(220, 215, 15, 205, 195, 35, 43, true)]     // overlapping corner
-    [TestCase(100, 165, 10, 112, 145, 68, 87, true)]     // touching edge
-    public void CircleRectCollision_VariousScenarios_ReturnsExpected(
-        float cx, float cy, float radius,
-        float rx, float ry, float rw, float rh,
-        bool expected)
-    {
-        bool result = CollisionMath.CircleRectCollision(cx, cy, radius, rx, ry, rw, rh);
-        Assert.That(result, Is.EqualTo(expected));
-    }
+```csharp
+private static IEnumerable<TestCaseData> CircleRectCollisionCases()
+{
+    yield return new TestCaseData(150f, 150f, 10f, 100f, 100f, 80f, 120f, true)
+        .SetName("CenterInsideRect");
+    yield return new TestCaseData(50f, 50f, 10f, 200f, 200f, 30f, 30f, false)
+        .SetName("FarApart");
+    yield return new TestCaseData(220f, 217f, 12f, 206f, 199f, 35f, 41f, true)
+        .SetName("CornerOverlap");
+    yield return new TestCaseData(104f, 172f, 9f, 111f, 157f, 65f, 76f, true)
+        .SetName("TouchingEdge");
+}
 
-Now you have four tests in one method. Adding a fifth scenario is just one extra line.
+[Test, TestCaseSource(nameof(CircleRectCollisionCases))]
+public void CircleRectCollision_VariousScenarios_ReturnsExpected(
+    float cx, float cy, float radius,
+    float rx, float ry, float rw, float rh,
+    bool expected)
+{
+    bool result = CollisionMath.CircleRectCollision(cx, cy, radius, rx, ry, rw, rh);
+    Assert.That(result, Is.EqualTo(expected));
+}
+```
+
+Each case gets a descriptive name, making failure messages easier to understand.
 
 ### 3.2 Using `[TestCaseSource]` for Data-Driven Tests
 
 When you have many test cases or complex data, `[TestCase]` becomes unwieldy. Use `[TestCaseSource]` to load data from a separate method, field, or property.
 
-#### **Example: Loading collision test data from a method**
+### **Example: Loading collision test data from a method**
 
-    private static IEnumerable<TestCaseData> CircleRectCollisionCases()
-    {
-        yield return new TestCaseData(150f, 150f, 10f, 100f, 100f, 80f, 120f, true)
-            .SetName("CenterInsideRect");
-        yield return new TestCaseData(50f, 50f, 10f, 200f, 200f, 30f, 30f, false)
-            .SetName("FarApart");
-        yield return new TestCaseData(220f, 218f, 12f, 208f, 201f, 33f, 39f, true)
-            .SetName("CornerOverlap");
-        yield return new TestCaseData(100f, 168f, 8f, 114f, 149f, 65f, 81f, true)
-            .SetName("TouchingEdge");
-    }
+We already saw this above. The same pattern applies to rectangle-rectangle collisions:
 
-    [Test, TestCaseSource(nameof(CircleRectCollisionCases))]
-    public void CircleRectCollision_VariousScenarios_ReturnsExpected(
-        float cx, float cy, float radius,
-        float rx, float ry, float rw, float rh,
-        bool expected)
-    {
-        bool result = CollisionMath.CircleRectCollision(cx, cy, radius, rx, ry, rw, rh);
-        Assert.That(result, Is.EqualTo(expected));
-    }
+```csharp
+private static IEnumerable<TestCaseData> RectRectCollisionCases()
+{
+    yield return new TestCaseData(100f, 103f, 54f, 49f, 119f, 128f, 32f, 22f, true)
+        .SetName("OverlappingCenters");
+    yield return new TestCaseData(0f, 56f, 47f, 58f, 45f, 70f, 50f, 28f, true)
+        .SetName("TouchingEdges");
+    yield return new TestCaseData(94f, 51f, 23f, 14f, 185f, 44f, 19f, 11f, false)
+        .SetName("NotOverlapping");
+    yield return new TestCaseData(70f, 69f, 86f, 73f, 84f, 88f, 23f, 21f, true)
+        .SetName("OneContainsOther");
+}
 
-Each case gets a descriptive name, making failure messages easier to understand.
+[Test, TestCaseSource(nameof(RectRectCollisionCases))]
+public void RectRectCollision_VariousScenarios_ReturnsExpected(
+    float x1, float y1, float w1, float h1,
+    float x2, float y2, float w2, float h2,
+    bool expected)
+{
+    bool result = CollisionMath.RectRectCollision(x1, y1, w1, h1, x2, y2, w2, h2);
+    Assert.That(result, Is.EqualTo(expected));
+}
+```
 
 ### 3.3 Floating-Point Comparisons with `Within`
 
 Physics calculations produce floating-point results that may differ slightly due to rounding. Always use `Within` for equality checks on floats.
 
-    Assert.That(result, Is.EqualTo(expected).Within(0.0001f));
+```csharp
+Assert.That(result, Is.EqualTo(expected).Within(0.0001f));
+```
 
 You can also use `Percent`:
 
-    Assert.That(result, Is.EqualTo(expected).Within(1.0).Percent);
+```csharp
+Assert.That(result, Is.EqualTo(expected).Within(1.0).Percent);
+```
 
 In our `PhysicsTests`, we already used `Within(0.001f)`. This is good practice for any float-based logic.
 
@@ -541,21 +557,22 @@ When a method changes multiple properties, use `Assert.Multiple` to report all f
 
 We already used this in `PlayerTests`. Another example:
 
-    [Test]
-    public void Player_AfterFullJumpCycle_ReturnsToGround()
+```csharp
+[Test]
+public void Player_AfterFullJumpCycle_ReturnsToGround()
+{
+    var p = new Player(0, 494);
+    p.Jump();
+    p.Update(0.025f);  // initial upward movement
+    p.Update(0.835f);  // enough time to go up and come back down
+    Assert.Multiple(() =>
     {
-        var p = new Player(0, 495);
-        p.Jump();
-        // Simulate jump arc: up then down
-        p.Update(0.02f);  // initial upward movement
-        p.Update(0.84f);  // enough time to go up and come back down
-        Assert.Multiple(() =>
-        {
-            Assert.That(p.Y, Is.EqualTo(500));
-            Assert.That(p.VelocityY, Is.Zero);
-            Assert.That(p.IsOnGround, Is.True);
-        });
-    }
+        Assert.That(p.Y, Is.EqualTo(500));
+        Assert.That(p.VelocityY, Is.Zero);
+        Assert.That(p.IsOnGround, Is.True);
+    });
+}
+```
 
 Without `Assert.Multiple`, if Y was wrong, you would never see that VelocityY was also wrong until fixing Y first.
 
@@ -563,55 +580,64 @@ Without `Assert.Multiple`, if Y was wrong, you would never see that VelocityY wa
 
 If you repeatedly check the same combination of conditions, extract a helper method.
 
-    private static void AssertPlayerState(Player player, float expectedY, float expectedVelY, bool expectedOnGround)
+```csharp
+private static void AssertPlayerState(Player player, float expectedY, float expectedVelY, bool expectedOnGround)
+{
+    Assert.Multiple(() =>
     {
-        Assert.Multiple(() =>
-        {
-            Assert.That(player.Y, Is.EqualTo(expectedY));
-            Assert.That(player.VelocityY, Is.EqualTo(expectedVelY).Within(0.001f));
-            Assert.That(player.IsOnGround, Is.EqualTo(expectedOnGround));
-        });
-    }
+        Assert.That(player.Y, Is.EqualTo(expectedY));
+        Assert.That(player.VelocityY, Is.EqualTo(expectedVelY).Within(0.001f));
+        Assert.That(player.IsOnGround, Is.EqualTo(expectedOnGround));
+    });
+}
+```
 
 Then your tests become cleaner:
 
-    [Test]
-    public void Update_AfterLanding_StateIsCorrect()
-    {
-        var p = new Player(0, 430);
-        p.Update(0.85f);
-        AssertPlayerState(p, 500f, 0f, true);
-    }
+```csharp
+[Test]
+public void Update_AfterLanding_StateIsCorrect()
+{
+    var p = new Player(0, 448);
+    p.Update(0.702f);
+    AssertPlayerState(p, 500f, 0f, true);
+}
+```
 
 ### 3.6 Test Lifecycle: `[SetUp]` and `[TearDown]`
 
 When many tests share the same arrangement, use `[SetUp]` to reduce duplication.
 
-    public class ScoreCalculatorTests
+```csharp
+public class ScoreCalculatorTests
+{
+    private ScoreCalculator _calc;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ScoreCalculator _calc;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _calc = new ScoreCalculator();
-        }
-
-        [Test]
-        public void NewCalculator_HasZeroScore()
-        {
-            Assert.That(_calc.Score, Is.Zero);
-        }
-
-        [Test]
-        public void CollectCoin_WithPositiveValue_IncreasesScore()
-        {
-            _calc.CollectCoin(10);
-            Assert.That(_calc.Score, Is.EqualTo(10));
-        }
-
-        // ... more tests using _calc ...
+        _calc = new ScoreCalculator();
     }
+
+    [Test]
+    public void NewCalculator_HasZeroScore()
+    {
+        Assert.That(_calc.Score, Is.Zero);
+    }
+
+    [Test]
+    [TestCase(10, 10)]
+    [TestCase(1, 1)]
+    [TestCase(999, 999)]
+    public void CollectCoin_PositiveValues_IncreasesScoreCorrectly(int coinValue, int expectedScore)
+    {
+        _calc.CollectCoin(coinValue);
+        Assert.That(_calc.Score, Is.EqualTo(expectedScore));
+    }
+
+    // ... more tests using _calc ...
+}
+```
 
 Be careful: `[SetUp]` runs before **each** test, ensuring tests are isolated. Do not put shared state that accumulates across tests.
 
@@ -619,12 +645,14 @@ Be careful: `[SetUp]` runs before **each** test, ensuring tests are isolated. Do
 
 If a test is failing and you want to commit your code without breaking the build, use `[Ignore]` with a reason:
 
-    [Test]
-    [Ignore("Refactoring collision logic – will fix next commit")]
-    public void CircleRectCollision_EdgeCase_ReturnsTrue()
-    {
-        // ...
-    }
+```csharp
+[Test]
+[Ignore("Refactoring collision logic – will fix next commit")]
+public void CircleRectCollision_EdgeCase_ReturnsTrue()
+{
+    // ...
+}
+```
 
 This documents known issues and prevents the test from blocking CI pipelines.
 
@@ -636,14 +664,16 @@ Generally, test only public behaviour. If a private method is complex, consider 
 
 As your project grows, organise tests by feature:
 
-    game.test/
-    ├── Models/
-    │   ├── ScoreCalculatorTests.cs
-    │   ├── PhysicsTests.cs
-    │   ├── CollisionMathTests.cs
-    │   └── PlayerTests.cs
-    ├── Services/          (future: tests for service classes)
-    └── Integration/       (future: tests that span multiple classes)
+```
+game.test/
+├── Models/
+│   ├── ScoreCalculatorTests.cs
+│   ├── PhysicsTests.cs
+│   ├── CollisionMathTests.cs
+│   └── PlayerTests.cs
+├── Services/          (future: tests for service classes)
+└── Integration/       (future: tests that span multiple classes)
+```
 
 Use namespaces consistently: `SplashKitNUnit.Game.Test.Models`, `SplashKitNUnit.Game.Test.Services`, etc.
 
@@ -651,24 +681,42 @@ Use namespaces consistently: `SplashKitNUnit.Game.Test.Models`, `SplashKitNUnit.
 
 Consider adding a GitHub Actions workflow to run tests automatically on every push:
 
-    # .github/workflows/dotnet.yml
-    name: .NET
-    on: [push, pull_request]
-    jobs:
-      test:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v4
-          - uses: actions/setup-dotnet@v4
-            with:
-              dotnet-version: 8.0.x
-          - run: dotnet restore
-          - run: dotnet build --no-restore
-          - run: dotnet test --no-build --verbosity normal
+```yaml
+# .github/workflows/dotnet.yml
+name: .NET
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build --verbosity normal
+```
 
 This ensures your tests always pass before merging.
 
-### 3.11 Summary of Part 3
+### 3.11 Final Verification
+
+After applying all Part 3 changes, run:
+
+```bash
+dotnet test
+```
+
+You should see:
+
+```
+Passed! - Failed: 0, Passed: 33, Skipped: 0, Total: 33
+```
+
+The test count increased from 26 to 33 because we added new parameterised scenarios (extra collision cases and player landing cases). All tests pass with the corrected test data.
+
+### 3.12 Summary of Part 3
 
 | Technique | Benefit |
 | --- | --- |
@@ -682,3 +730,14 @@ This ensures your tests always pass before merging.
 | CI pipeline | Automatically verify tests on each commit |
 
 These patterns turn a basic test suite into a robust safety net. In Part 4 we will look at refactoring real game code using tests as a guide, demonstrating how TDD (Test-Driven Development) helps you design cleaner abstractions.
+
+---
+
+### Note on Branch Strategy
+
+Part 3 modifies the test files from Part 2. To keep both versions clean, we recommend branching:
+
+- After Part 2: `git checkout -b part2-complete`
+- Before Part 3: `git checkout part2-complete && git checkout -b part3-advanced`
+
+This preserves the original 26-test suite and allows independent exploration of advanced techniques.

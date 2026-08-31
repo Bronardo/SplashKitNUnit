@@ -15,8 +15,10 @@ namespace SplashKitNUnit.Game.Test
                 .SetName("FarApart");
             yield return new TestCaseData(220f, 218f, 12f, 208f, 201f, 33f, 39f, true)
                 .SetName("CornerOverlap");
-            yield return new TestCaseData(101f, 167f, 9f, 113f, 148f, 66f, 82f, true)
-                .SetName("TouchingEdge");
+            yield return new TestCaseData(104f, 170f, 9f, 113f, 155f, 67f, 78f, true)
+                .SetName("TouchingLeftEdge");
+            yield return new TestCaseData(150f, 146f, 9f, 143f, 153f, 71f, 79f, true)
+                .SetName("TouchingTopEdge");
         }
 
         [Test, TestCaseSource(nameof(CircleRectCollisionCases))]

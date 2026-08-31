@@ -53,8 +53,8 @@ namespace SplashKitNUnit.Game.Test
         }
 
         [Test]
-        [TestCase(0f, 498f, 0.005f, true)]   // barely above ground, small dt
-        [TestCase(0f, 497f, 0.008f, true)]   // slightly higher, still lands
+        [TestCase(0f, 498f, 0.071f, true)]   // 2px gap: needs ~0.064s, 0.071s is safe
+        [TestCase(0f, 496f, 0.091f, true)]   // 4px gap: needs ~0.082s, 0.091s is safe
         public void Update_LandsOnGround_StateIsCorrect(float startX, float startY, float deltaTime, bool expectedOnGround)
         {
             var p = new Player(startX, startY);
