@@ -742,4 +742,6 @@ Part 3 modifies the test files from Part 2. To keep both versions clean, we reco
 
 This preserves the original 26-test suite and allows independent exploration of advanced techniques.
 
-Now switch to main branch to continue reading part 4.
+---
+
+## **Now switch to main branch.**
