@@ -1,6 +1,6 @@
 # SplashKitNUnit
 
-[<https://img.shields.io/badge/GitHub-Bronardo%2FSplashKitNUnit-blue>](<https://github.com/Bronardo/SplashKitNUnit>)
+[![Badge](https://img.shields.io/badge/GitHub-Bronardo%2FSplashKitNUnit-blue)](https://github.com/Bronardo/SplashKitNUnit)
 
 A demonstration of writing NUnit unit tests for SplashKit game logic, separating pure logic from SplashKit side effects.
 
