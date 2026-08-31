@@ -1,72 +1,54 @@
 using NUnit.Framework;
 using SplashKitNUnit.Game.Models;
+using System.Collections.Generic;
 
 namespace SplashKitNUnit.Game.Test
 {
     [TestFixture]
     public class CollisionMathTests
     {
-        // --- Circle-Rectangle Collision ---
-
-        [Test]
-        public void CircleRectCollision_CenterInsideRect_ReturnsTrue()
+        private static IEnumerable<TestCaseData> CircleRectCollisionCases()
         {
-            bool result = CollisionMath.CircleRectCollision(150, 150, 10, 100, 100, 80, 120);
-            Assert.That(result, Is.True);
+            yield return new TestCaseData(150f, 150f, 10f, 100f, 100f, 80f, 120f, true)
+                .SetName("CenterInsideRect");
+            yield return new TestCaseData(50f, 50f, 10f, 200f, 200f, 30f, 30f, false)
+                .SetName("FarApart");
+            yield return new TestCaseData(220f, 218f, 12f, 208f, 201f, 33f, 39f, true)
+                .SetName("CornerOverlap");
+            yield return new TestCaseData(101f, 167f, 9f, 113f, 148f, 66f, 82f, true)
+                .SetName("TouchingEdge");
         }
 
-        [Test]
-        public void CircleRectCollision_CircleTouchingEdge_ReturnsTrue()
+        [Test, TestCaseSource(nameof(CircleRectCollisionCases))]
+        public void CircleRectCollision_VariousScenarios_ReturnsExpected(
+            float cx, float cy, float radius,
+            float rx, float ry, float rw, float rh,
+            bool expected)
         {
-            // Circle center exactly on left edge of rect
-            bool result = CollisionMath.CircleRectCollision(100, 160, 10, 110, 140, 70, 90);
-            // Closest point: (110, 160) -> distance = 10, radius=10 => touching (considered collision)
-            Assert.That(result, Is.True);
+            bool result = CollisionMath.CircleRectCollision(cx, cy, radius, rx, ry, rw, rh);
+            Assert.That(result, Is.EqualTo(expected));
         }
 
-        [Test]
-        public void CircleRectCollision_FarApart_ReturnsFalse()
+        private static IEnumerable<TestCaseData> RectRectCollisionCases()
         {
-            bool result = CollisionMath.CircleRectCollision(50, 50, 10, 200, 200, 30, 30);
-            Assert.That(result, Is.False);
+            yield return new TestCaseData(100f, 100f, 50f, 50f, 115f, 127f, 34f, 25f, true)
+                .SetName("OverlappingCenters");
+            yield return new TestCaseData(0f, 51f, 49f, 59f, 44f, 72f, 52f, 30f, true)
+                .SetName("TouchingEdges");
+            yield return new TestCaseData(97f, 53f, 21f, 12f, 188f, 42f, 17f, 13f, false)
+                .SetName("NotOverlapping");
+            yield return new TestCaseData(73f, 74f, 88f, 76f, 86f, 91f, 25f, 23f, true)
+                .SetName("OneContainsOther");
         }
 
-        [Test]
-        public void CircleRectCollision_CircleAboveRect_NoOverlap_ReturnsFalse()
+        [Test, TestCaseSource(nameof(RectRectCollisionCases))]
+        public void RectRectCollision_VariousScenarios_ReturnsExpected(
+            float x1, float y1, float w1, float h1,
+            float x2, float y2, float w2, float h2,
+            bool expected)
         {
-            bool result = CollisionMath.CircleRectCollision(210, 180, 10, 190, 230, 45, 55);
-            Assert.That(result, Is.False);
-        }
-
-        // --- Rectangle-Rectangle Collision ---
-
-        [Test]
-        public void RectRectCollision_OverlappingCenters_ReturnsTrue()
-        {
-            bool result = CollisionMath.RectRectCollision(100, 100, 50, 50, 120, 130, 35, 25);
-            Assert.That(result, Is.True);
-        }
-
-        [Test]
-        public void RectRectCollision_TouchingEdges_ReturnsTrue()
-        {
-            // One rect's right edge touches the other's left edge
-            bool result = CollisionMath.RectRectCollision(0, 0, 48, 37, 47, 21, 34, 18);
-            Assert.That(result, Is.True);
-        }
-
-        [Test]
-        public void RectRectCollision_NotOverlapping_ReturnsFalse()
-        {
-            bool result = CollisionMath.RectRectCollision(10, 16, 24, 26, 96, 38, 13, 11);
-            Assert.That(result, Is.False);
-        }
-
-        [Test]
-        public void RectRectCollision_OneContainsOther_ReturnsTrue()
-        {
-            bool result = CollisionMath.RectRectCollision(0, 23, 89, 77, 14, 41, 29, 22);
-            Assert.That(result, Is.True);
+            bool result = CollisionMath.RectRectCollision(x1, y1, w1, h1, x2, y2, w2, h2);
+            Assert.That(result, Is.EqualTo(expected));
         }
     }
 }

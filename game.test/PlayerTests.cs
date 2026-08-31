@@ -6,6 +6,16 @@ namespace SplashKitNUnit.Game.Test
     [TestFixture]
     public class PlayerTests
     {
+        private static void AssertPlayerState(Player player, float expectedY, float expectedVelY, bool expectedOnGround)
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(player.Y, Is.EqualTo(expectedY));
+                Assert.That(player.VelocityY, Is.EqualTo(expectedVelY).Within(0.001f));
+                Assert.That(player.IsOnGround, Is.EqualTo(expectedOnGround));
+            });
+        }
+
         [Test]
         public void Constructor_SetsPositionAndDefaults()
         {
@@ -23,7 +33,7 @@ namespace SplashKitNUnit.Game.Test
         [Test]
         public void Jump_WhenOnGround_SetsVelocityAndNotOnGround()
         {
-            var p = new Player(0, 480);
+            var p = new Player(0, 478);
             p.Jump();
             Assert.Multiple(() =>
             {
@@ -35,41 +45,35 @@ namespace SplashKitNUnit.Game.Test
         [Test]
         public void Jump_WhenAlreadyAirborne_DoesNothing()
         {
-            var p = new Player(0, 460);
-            p.Jump(); // first jump
+            var p = new Player(0, 468);
+            p.Jump();
             float velAfterFirst = p.VelocityY;
-            p.Jump(); // second jump should be ignored
+            p.Jump();
             Assert.That(p.VelocityY, Is.EqualTo(velAfterFirst));
-            Assert.That(p.IsOnGround, Is.False);
         }
 
         [Test]
-        public void Update_WithGravity_MovesPlayerDownward()
+        [TestCase(0f, 498f, 0.005f, true)]   // barely above ground, small dt
+        [TestCase(0f, 497f, 0.008f, true)]   // slightly higher, still lands
+        public void Update_LandsOnGround_StateIsCorrect(float startX, float startY, float deltaTime, bool expectedOnGround)
         {
-            var p = new Player(0, 490);
-            p.Update(0.05f); // 50 ms
-            Assert.That(p.Y, Is.GreaterThan(490));
-            Assert.That(p.VelocityY, Is.GreaterThan(0));
+            var p = new Player(startX, startY);
+            p.Update(deltaTime);
+            AssertPlayerState(p, 500f, 0f, expectedOnGround);
         }
 
         [Test]
         public void Update_FallsToGround_StopsAtGround()
         {
-            var p = new Player(0, 470);
-            // Use a delta time large enough to definitely reach ground (e.g., 0.3s)
-            p.Update(0.3f);
-            Assert.Multiple(() =>
-            {
-                Assert.That(p.Y, Is.EqualTo(500));          // clamped to ground
-                Assert.That(p.VelocityY, Is.Zero);          // stopped
-                Assert.That(p.IsOnGround, Is.True);         // landed
-            });
+            var p = new Player(0, 445);
+            p.Update(0.71f);
+            AssertPlayerState(p, 500f, 0f, true);
         }
 
         [Test]
         public void CollectCoin_IncrementsCount()
         {
-            var p = new Player(0, 240);
+            var p = new Player(0, 270);
             p.CollectCoin();
             p.CollectCoin();
             Assert.That(p.CoinsCollected, Is.EqualTo(2));

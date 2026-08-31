@@ -7,39 +7,27 @@ namespace SplashKitNUnit.Game.Test
     public class PhysicsTests
     {
         [Test]
-        public void ApplyGravity_WithZeroDelta_ReturnsSameVelocity()
+        public void Gravity_IsPositiveConstant()
         {
-            float result = Physics.ApplyGravity(100f, 0f);
-            Assert.That(result, Is.EqualTo(100f));
+            Assert.That(Physics.Gravity, Is.GreaterThan(0));
         }
 
         [Test]
-        public void ApplyGravity_WithPositiveDelta_IncreasesVelocityDownward()
+        [TestCase(0f, 0f, 0f)]
+        [TestCase(100f, 0f, 100f)]
+        [TestCase(0f, 1f, 980f)]
+        [TestCase(200f, 1f, 1180f)]
+        [TestCase(-400f, 0.5f, 90f)]  // initial upward, half second
+        public void ApplyGravity_CalculatesCorrectly(float initialVelocity, float deltaTime, float expected)
         {
-            float result = Physics.ApplyGravity(0f, 1f);
-            // Gravity = 980, so after 1 second velocity should be 980
-            Assert.That(result, Is.EqualTo(980f).Within(0.001f));
-        }
-
-        [Test]
-        public void ApplyGravity_WithInitialUpwardVelocity_ReducesThenIncreases()
-        {
-            float result = Physics.ApplyGravity(200f, 1f);
-            // 200 + 980 * 1 = 1180
-            Assert.That(result, Is.EqualTo(1180f).Within(0.001f));
+            float result = Physics.ApplyGravity(initialVelocity, deltaTime);
+            Assert.That(result, Is.EqualTo(expected).Within(0.001f));
         }
 
         [Test]
         public void GetJumpVelocity_ReturnsExpectedConstant()
         {
-            float jumpVel = Physics.GetJumpVelocity();
-            Assert.That(jumpVel, Is.EqualTo(-400f));
-        }
-
-        [Test]
-        public void Gravity_IsPositiveConstant()
-        {
-            Assert.That(Physics.Gravity, Is.GreaterThan(0));
+            Assert.That(Physics.GetJumpVelocity(), Is.EqualTo(-400f));
         }
     }
 }
