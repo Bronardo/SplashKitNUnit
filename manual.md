@@ -416,3 +416,13 @@ By pulling pure logic out of SplashKit and into dedicated model classes, we achi
 - A design that scales well as the game grows.
 
 In the next part (Part 3) we will explore advanced NUnit features such as parameterised tests and custom assertions, and discuss how to extend this pattern to larger projects.
+
+### **Save Your Progress**
+
+Congratulations! You have finished writing the basic tests. To keep your current achievements safe while exploring advanced techniques later without affecting what you've already built, run the following commands to create a backup branch:
+
+    git add .
+    git commit -m "Part 2 complete: 26 passing tests"
+    git branch part2-complete
+
+You are currently on the `master` (or `main`) branch, and your Part 2 code is now permanently saved in the `part2-complete` branch. When you move on to Part 3, we will create a new branch based on this one.
