@@ -66,7 +66,7 @@ dotnet test
 
 All tests should pass. Expected output:
 
-```
+```bash
 Passed! - Failed: 0, Passed: 33, Skipped: 0, Total: 33
 ```
 
@@ -115,7 +115,7 @@ If you want to experiment with advanced techniques without losing the simple Par
 
 ## Project Structure
 
-```
+```cli
 SplashKitNUnit/
 ├── game/
 │   ├── Program.cs              # Entry point, SplashKit game loop
