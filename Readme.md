@@ -59,7 +59,7 @@ This launches the SplashKit window with the game loop. Press the spacebar to jum
 ## Troubleshooting
 
 | Problem | Solution |
-|---|---|
+| --- | --- |
 | `error CS0017: Program has more than one entry point` | Ensure the test project is a separate library (it already is). Run `dotnet clean` and rebuild. |
 | `SplashKit.dll not found` | Reinstall SplashKit with `skm dotnet install` and restart your terminal. |
 | `dotnet test` finds no tests | Make sure test files are inside `game.test/` and the `.csproj` includes `Microsoft.NET.Test.Sdk`. |
