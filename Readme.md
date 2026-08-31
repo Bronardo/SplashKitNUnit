@@ -89,7 +89,7 @@ This launches the SplashKit window with the game loop. Press the spacebar to jum
 
 ## Contributing
 
-This project is part of Deakin University's SIT771 unit. Feel free to fork and adapt for your own learning. 
+This project is part of Deakin University's SIT771 unit. Feel free to fork and adapt for your own learning.
 
 ## License
 
