@@ -664,7 +664,7 @@ Generally, test only public behaviour. If a private method is complex, consider 
 
 As your project grows, organise tests by feature:
 
-```
+```text
 game.test/
 ├── Models/
 │   ├── ScoreCalculatorTests.cs
@@ -741,3 +741,5 @@ Part 3 modifies the test files from Part 2. To keep both versions clean, we reco
 - Before Part 3: `git checkout part2-complete && git checkout -b part3-advanced`
 
 This preserves the original 26-test suite and allows independent exploration of advanced techniques.
+
+Now switch to main branch to continue reading part 4.
