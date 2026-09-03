@@ -134,8 +134,6 @@ After completing the steps, your project tree should look like this:
 
 With the setup verified, you are ready to explore the tutorial content. The following sections will explain how to write pure‑logic classes, create NUnit tests, and refactor a tightly‑coupled game object.
 
-好的，现在我们从 **Part 2** 开始撰写教程正文。这部分将聚焦于核心概念：如何识别和提取纯逻辑，以及如何为这些逻辑编写 NUnit 测试。
-
 ---
 
 ## Part 2: Separating Pure Logic from SplashKit Side Effects
